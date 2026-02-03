@@ -22,7 +22,7 @@ export class ApiService {
   }
 
   private request<T>(
-    method: 'GET' | 'POST' | 'DELETE',
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE',
     endpoint: string,
     options: {
       body?: any,
@@ -48,12 +48,19 @@ export class ApiService {
 
     return this.http.request<T>(method, url, requestOptions).pipe(
       retry(1),
-      catchError(this.handleError),
+        catchError(this.handleError), 
       map(response => {
         this.loadingState.update(state => ({ ...state, [loadingKey]: false }));
         return response as T;
       })
     );
+  }
+
+  put<T>(endpoint: string, content: any, customRootUrl?: string): Observable<T> {
+    return this.request<T>('PUT', endpoint, {
+      body: content,
+      customRootUrl
+    });
   }
 
   getList<T>(endpoint: string): Observable<T[]> {

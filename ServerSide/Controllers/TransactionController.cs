@@ -18,14 +18,21 @@ namespace ServerSide.Controllers
         [HttpGet("GetCategoryList")]
         public async Task<ActionResult<List<Category>>> GetCategoryList()
         {
-            var categories = await _context.Categories.ToListAsync();
-            return Ok(categories);
+            try
+            {
+                var categories = await _context.Categories.ToListAsync();
+                return Ok(categories);
+            }catch(Exception ex)
+            {
+                string s = ex.Message;
+                return BadRequest();
+            }
         }
 
         [HttpGet("GetTransactionDetails")]
         public async Task<ActionResult<List<Transactions>>> GetTransactionDetails()
         {
-            var transactions = await _context.Transactions
+             var transactions = await _context.Transactions
                 .Include(t => t.Category)
                 .ToListAsync();
 
@@ -37,21 +44,20 @@ namespace ServerSide.Controllers
         {
             try
             {
+                if (newTransaction == null)
+                {
+                    return BadRequest("Transaction data is null.");
+                }
                 newTransaction.CategoryId = newTransaction.Category?.Id;
                 newTransaction.Category = null;
-            if (newTransaction == null)
-            {
-                return BadRequest("Transaction data is null.");
-            }
                 _context.Transactions.Add(newTransaction);
                 await _context.SaveChangesAsync();
 
                 return Ok(new { message = "Transaction saved successfully." });
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-
-                throw;
+                return BadRequest(new { message = "Error saving transaction: " + ex.Message });
             }
         }
 
@@ -67,6 +73,30 @@ namespace ServerSide.Controllers
             _context.Transactions.Remove(transaction);
             await _context.SaveChangesAsync();
             return Ok(new { message = "Transaction deleted successfully." });
+        }
+
+        [HttpPut("UpdateTransactionLine/{id}")]
+        public async Task<ActionResult> UpdateTransactionLine(int id, [FromBody] Transactions updatedTransaction)
+        {
+            if (updatedTransaction == null || id != updatedTransaction.Id)
+            {
+                return BadRequest("Transaction data is invalid.");
+            }
+
+            var existing = await _context.Transactions.FindAsync(id);
+            if (existing == null)
+            {
+                return NotFound("Transaction not found.");
+            }
+
+            existing.Date = updatedTransaction.Date;
+            existing.Amount = updatedTransaction.Amount;
+            existing.Description = updatedTransaction.Description;
+            existing.CategoryId = updatedTransaction.CategoryId;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Transaction updated successfully." });
         }
     }
     }

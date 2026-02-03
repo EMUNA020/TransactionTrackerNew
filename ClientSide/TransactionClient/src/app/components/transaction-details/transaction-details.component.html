@@ -19,15 +19,46 @@
 
                         <tbody>
                             <tr *ngFor="let tx of transactionDetails?.transactions; let i = index">
-                                <td>{{ tx.date | date: 'MM/dd/yyyy' }}</td>
-                                <td>{{ tx.category?.name }}</td>
-                                <td>{{ tx.description }}</td>
-                                <td>{{ tx.amount | currency }}</td>
-                                <td>
-                                    <button mat-icon-button color="warn" (click)="deleteTransaction(i)">
-                                        <mat-icon>delete</mat-icon>
-                                    </button>
-                                </td>
+                                <ng-container *ngIf="editingIndex !== i; else editRow">
+                                    <td>{{ tx.date | date: 'MM/dd/yyyy' }}</td>
+                                    <td>{{ tx.category?.name }}</td>
+                                    <td>{{ tx.description }}</td>
+                                    <td>{{ tx.amount | currency }}</td>
+                                    <td>
+                                        <button mat-icon-button color="primary" (click)="editTransaction(i)">
+                                            <mat-icon>edit</mat-icon>
+                                        </button>
+                                        <button mat-icon-button color="warn" (click)="deleteTransaction(i)">
+                                            <mat-icon>delete</mat-icon>
+                                        </button>
+                                    </td>
+                                </ng-container>
+
+                                <ng-template #editRow>
+                                    <td>
+                                        <input type="date" class="form-control form-control-sm" [(ngModel)]="editedTransaction!.date">
+                                    </td>
+                                    <td>
+                                        <select class="form-select form-select-sm" [(ngModel)]="editedTransaction!.category">
+                                            <option [ngValue]="null" disabled>Select Category</option>
+                                            <option *ngFor="let cat of transactionDetails?.categoryList" [ngValue]="cat">{{ cat.name }}</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control form-control-sm" [(ngModel)]="editedTransaction!.description">
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control form-control-sm" [(ngModel)]="editedTransaction!.amount">
+                                    </td>
+                                    <td>
+                                        <button mat-icon-button color="primary" (click)="saveEdit(i)">
+                                            <mat-icon>save</mat-icon>
+                                        </button>
+                                        <button mat-icon-button (click)="cancelEdit()">
+                                            <mat-icon>close</mat-icon>
+                                        </button>
+                                    </td>
+                                </ng-template>
                             </tr>
                         </tbody>
                     </table>

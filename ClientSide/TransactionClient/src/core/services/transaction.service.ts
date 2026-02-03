@@ -59,4 +59,8 @@ export class TransactionService {
     deleteTransaction(id: number): Observable<any> {
         return this.apiService.delete<any>(`Transactions/DeleteTransactionLine/${id}`, id);
     }
+
+    updateTransaction(id: number, updatedTransaction: Transactions): Observable<any> {
+        return this.apiService.put<any>(`Transactions/UpdateTransactionLine/${id}`, updatedTransaction);
+    }
 }
